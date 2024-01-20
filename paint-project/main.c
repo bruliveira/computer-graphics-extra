@@ -257,6 +257,26 @@ void desenhaListaPontos(ListaPontos *listaPontos)
     }
     glEnd();
 }
+int pontoNaReta(float mx, float my, Reta reta)
+{
+    // Adicione esses prints para debug
+    printf("\n\nmx: %.2f, my: %.2f\n", mx, my);
+    printf("reta.pontoInicio.x: %.2f, reta.pontoInicio.y: %.2f\n", reta.pontoInicio.x, reta.pontoInicio.y);
+    printf("reta.pontoFim.x: %.2f, reta.pontoFim.y: %.2f\n", reta.pontoFim.x, reta.pontoFim.y);
+
+    // Verifica se o ponto (mx, my) está dentro da tolerância da reta
+    if (mx >= fmin(reta.pontoInicio.x, reta.pontoFim.x) - TOLERANCIA &&
+        mx <= fmax(reta.pontoInicio.x, reta.pontoFim.x) + TOLERANCIA &&
+        my >= fmin(reta.pontoInicio.y, reta.pontoFim.y) - TOLERANCIA &&
+        my <= fmax(reta.pontoInicio.y, reta.pontoFim.y) + TOLERANCIA)
+    {
+        printf("Ponto está dentro da tolerância da reta.\n");
+        return 1; // Ponto está dentro da tolerância da reta
+    }
+
+    printf("Ponto NÃO está dentro da tolerância da reta.\n");
+    return 0; // Ponto não está dentro da tolerância da reta
+}
 
 void excluirPonto(ListaPontos *listaPontos, int indice)
 {
@@ -278,6 +298,30 @@ void excluirPonto(ListaPontos *listaPontos, int indice)
     }
 }
 
+void excluirReta(ListaRetas *listaRetas, int indice)
+{
+    printf("\nSó na função mesmo\n");
+    if (listaRetas == NULL || listaRetasVazia(listaRetas) == 1)
+        printf("\nLista vazia ou ocorreu um erro inesperado.\n");
+    else if (indice < 0 || indice >= listaRetas->quantidadeRetaLista)
+        printf("\nÍndice inválido para exclusão.\n");
+    else
+    {
+        printf("Excluindo reta: (%.2f, %.2f) - Ponto final (%.2f, %.2f)\n",
+               listaRetas->retas[indice].pontoInicio.x,
+               listaRetas->retas[indice].pontoInicio.y,
+               listaRetas->retas[indice].pontoFim.x,
+               listaRetas->retas[indice].pontoFim.y);
+
+        for (int i = indice; i < (listaRetas->quantidadeRetaLista - 1); i++)
+        {
+            listaRetas->retas[i] = listaRetas->retas[i + 1];
+        }
+        listaRetas->quantidadeRetaLista--;
+
+        printf("Reta excluída com sucesso.\n");
+    }
+}
 int selecionarPonto(ListaPontos *listaPontos, float px, float py)
 {
     if (listaPontos == NULL || listaPontos->quantidadePontoLista == 0)
@@ -301,6 +345,34 @@ int selecionarPonto(ListaPontos *listaPontos, float px, float py)
 
         printf("Nenhum ponto selecionado nas coordenadas (%.2f, %.2f)\n", px, py);
         return -1; // Adiciona um valor de retorno indicando que nenhum ponto foi encontrado
+    }
+}
+
+int selecionarReta(ListaRetas *listaRetas, float mx, float my)
+{
+    if (listaRetas == NULL || listaRetas->quantidadeRetaLista == 0)
+    {
+        printf("Lista de retas vazia ou ocorreu um erro inesperado.\n");
+        return -1; // Adiciona um valor de retorno indicando erro
+    }
+    else
+    {
+        for (int i = 0; i < listaRetas->quantidadeRetaLista; i++)
+        {
+            // Verifica se (mx, my) está dentro da tolerância da reta
+            if (pontoNaReta(mx, my, listaRetas->retas[i]))
+            {
+                printf("Reta selecionada: (%.2f, %.2f) - Ponto final (%.2f, %.2f), Índice: %d\n",
+                       listaRetas->retas[i].pontoInicio.x,
+                       listaRetas->retas[i].pontoInicio.y,
+                       listaRetas->retas[i].pontoFim.x,
+                       listaRetas->retas[i].pontoFim.y, i);
+                return i;
+            }
+        }
+
+        printf("Nenhuma reta selecionada nas coordenadas (%.2f, %.2f)\n", mx, my);
+        return -1; // Adiciona um valor de retorno indicando que nenhuma reta foi encontrada
     }
 }
 
@@ -444,6 +516,11 @@ void mouseClick(int botao, int state, int x, int y)
         break;
     case 5:
         printf("-> Selecionar/Excluir Segmento de Reta\n");
+        if (botao == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+        {
+            excluirReta(listaReta, selecionarReta(listaReta, x, 600 - y));
+            glutPostRedisplay();
+        }
         break;
     case 6:
         printf("-> Selecionar/Excluir Polilinha\n");
