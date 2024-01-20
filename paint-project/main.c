@@ -257,6 +257,7 @@ void desenhaListaPontos(ListaPontos *listaPontos)
     }
     glEnd();
 }
+
 int pontoNaReta(float mx, float my, Reta reta)
 {
     // Adicione esses prints para debug
@@ -373,6 +374,72 @@ int selecionarReta(ListaRetas *listaRetas, float mx, float my)
 
         printf("Nenhuma reta selecionada nas coordenadas (%.2f, %.2f)\n", mx, my);
         return -1; // Adiciona um valor de retorno indicando que nenhuma reta foi encontrada
+    }
+}
+
+// Função para verificar se um ponto (mx, my) está dentro da tolerância do polígono
+int pontoNoPoligono(float mx, float my, Poligono poligono)
+{
+    int i, j, c = 0;
+    for (i = 0, j = poligono.quantidadePontosPoligono - 1; i < poligono.quantidadePontosPoligono; j = i++)
+    {
+        if (((poligono.pontos[i].y > my) != (poligono.pontos[j].y > my)) &&
+            (mx < (poligono.pontos[j].x - poligono.pontos[i].x) * (my - poligono.pontos[i].y) / (poligono.pontos[j].y - poligono.pontos[i].y) + poligono.pontos[i].x))
+        {
+            c = !c;
+        }
+    }
+    return c;
+}
+
+// Função para excluir um polígono da lista
+void excluirPoligono(ListaPoligonos *listaPoligonos, int indice)
+{
+    if (listaPoligonos == NULL || listaPoligonosVazia(listaPoligonos) == 1)
+    {
+        printf("\nLista vazia ou ocorreu um erro inesperado.\n");
+    }
+    else if (indice < 0 || indice >= listaPoligonos->quantidadePoligonoLista)
+    {
+        printf("\nÍndice inválido para exclusão.\n");
+    }
+    else
+    {
+        printf("Excluindo polígono:\n");
+        for (int i = indice; i < (listaPoligonos->quantidadePoligonoLista - 1); i++)
+        {
+            listaPoligonos->poligonos[i] = listaPoligonos->poligonos[i + 1];
+        }
+        listaPoligonos->quantidadePoligonoLista--;
+
+        printf("Polígono excluído com sucesso.\n");
+
+        glutPostRedisplay(); // Solicita a atualização da tela
+    }
+}
+
+// Função para selecionar um polígono com base em coordenadas (mx, my)
+int selecionarPoligono(ListaPoligonos *listaPoligonos, float mx, float my)
+{
+    if (listaPoligonos == NULL || listaPoligonos->quantidadePoligonoLista == 0)
+    {
+        printf("Lista de polígonos vazia ou ocorreu um erro inesperado.\n");
+        return -1; // Adiciona um valor de retorno indicando erro
+    }
+    else
+    {
+        for (int i = 0; i < listaPoligonos->quantidadePoligonoLista; i++)
+        {
+            // Verifica se (mx, my) está dentro da tolerância do polígono
+            if (pontoNoPoligono(mx, my, listaPoligonos->poligonos[i]))
+            {
+                printf("Polígono selecionado. Índice: %d\n", i);
+                return i;
+            }
+        }
+
+        printf("Nenhum polígono selecionado nas coordenadas (%.2f, %.2f)\n", mx, my);
+        return -1; // Adiciona um valor de retorno indicando que nenhum polígono foi encontrado
     }
 }
 
@@ -524,6 +591,19 @@ void mouseClick(int botao, int state, int x, int y)
         break;
     case 6:
         printf("-> Selecionar/Excluir Polilinha\n");
+
+        if (botao == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+        {
+            // Verifica se há algum polígono nas coordenadas do clique direito
+            int indicePoligonoSelecionado = selecionarPoligono(listaPoligono, x, glutGet(GLUT_WINDOW_HEIGHT) - y);
+
+            if (indicePoligonoSelecionado != -1)
+            {
+                // Exclui o polígono selecionado
+                excluirPoligono(listaPoligono, indicePoligonoSelecionado);
+            }
+        }
+
         break;
     case 7:
         printf("-> Transladar Ponto\n");
