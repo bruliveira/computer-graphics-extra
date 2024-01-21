@@ -323,6 +323,7 @@ void excluirReta(ListaRetas *listaRetas, int indice)
         printf("Reta excluída com sucesso.\n");
     }
 }
+
 int selecionarPonto(ListaPontos *listaPontos, float px, float py)
 {
     if (listaPontos == NULL || listaPontos->quantidadePontoLista == 0)
@@ -638,7 +639,12 @@ void mouseClick(int botao, int state, int x, int y)
         break;
     case 17:
         printf("-> Importar formas\n");
-        exit(0);
+        if (state == GLUT_DOWN && botao == GLUT_LEFT_BUTTON)
+        {
+            carregarFormas();
+            glutPostRedisplay(); // Atualiza a tela após a importação
+        }
+
         break;
     case 18:
         printf("-> Sair");
@@ -694,9 +700,83 @@ void salvarFormas()
         fprintf(arquivo, "%.2f %.2f %.2f %.2f\n", listaReta->retas[i].pontoInicio.x, listaReta->retas[i].pontoInicio.y, listaReta->retas[i].pontoFim.x, listaReta->retas[i].pontoFim.y);
     }
 
+    fprintf(arquivo, "\nPolígonos:\n");
+    for (int i = 0; i < listaPoligono->quantidadePoligonoLista; i++)
+    {
+        fprintf(arquivo, "Número de Lados: %d\n", listaPoligono->poligonos[i].quantidadePontosPoligono);
+        for (int j = 0; j < listaPoligono->poligonos[i].quantidadePontosPoligono; j++)
+        {
+            fprintf(arquivo, "%.2f %.2f\n", listaPoligono->poligonos[i].pontos[j].x, listaPoligono->poligonos[i].pontos[j].y);
+        }
+    }
+
     fclose(arquivo);
 
-    printf("Formas salvas no arquivo paint-formas.txt.\n");
+    printf("Formas salvas no arquivo formas.txt.\n");
+}
+
+void limparListas()
+{
+    if (listaPonto != NULL)
+    {
+        free(listaPonto);
+        listaPonto = criarListaPontos();
+    }
+
+    if (listaReta != NULL)
+    {
+        free(listaReta);
+        listaReta = criarListaRetas();
+    }
+
+    if (listaPoligono != NULL)
+    {
+        free(listaPoligono);
+        listaPoligono = criarListaPoligonos();
+    }
+}
+
+void carregarFormas()
+{
+    FILE *arquivo = fopen("formas.txt", "r");
+
+    if (arquivo == NULL)
+    {
+        printf("Erro ao abrir o arquivo para leitura.\n");
+        return;
+    }
+
+    // Limpar listas existentes antes de carregar
+    limparListas();
+
+    char linha[256];
+    int numeroLados;
+
+    while (fgets(linha, sizeof(linha), arquivo) != NULL)
+    {
+        if (strcmp(linha, "Pontos:\n") == 0)
+        {
+            while (fgets(linha, sizeof(linha), arquivo) != NULL && linha[0] != '\n')
+            {
+                Ponto ponto;
+                sscanf(linha, "%f %f", &ponto.x, &ponto.y);
+                adicionarPonto(listaPonto, ponto.x, ponto.y);
+            }
+        }
+        else if (strcmp(linha, "Retas:\n") == 0)
+        {
+            while (fgets(linha, sizeof(linha), arquivo) != NULL && linha[0] != '\n')
+            {
+                Reta reta;
+                sscanf(linha, "%f %f %f %f", &reta.pontoInicio.x, &reta.pontoInicio.y, &reta.pontoFim.x, &reta.pontoFim.y);
+                adicionarReta(listaReta, reta.pontoInicio, reta.pontoFim);
+            }
+        }
+    }
+
+    fclose(arquivo);
+
+    printf("Formas carregadas do arquivo formas.txt.\n");
 }
 
 int init(void)
@@ -772,8 +852,11 @@ int main(int argc, char **argv)
     poligono1.pontos[2].y = 10.0;
 
     poligono1.pontos[3].x = 600.0;
-    poligono1.pontos[3].y = 100.0;
-    poligono1.quantidadePontosPoligono = 4;
+    poligono1.pontos[3].y = 10.0;
+
+    poligono1.pontos[4].x = 600.0;
+    poligono1.pontos[4].y = 100.0;
+    poligono1.quantidadePontosPoligono = 5;
 
     adicionarPoligono(listaPoligono, poligono1);
 
