@@ -474,10 +474,18 @@ void desenhaPoligono(ListaPoligonos *listaPoligonos)
 
         glEnd();
     }
-    // printf("Polígonos desenhados.\n");
+    if (desenhandoPoligono && quantidadePontosTemporarios > 0)
+    {
+        glBegin(GL_LINE_STRIP);
+        glColor3f(0, 0, 1); // Cor azul
 
-    glFlush();         // Desenha os comandos
-    glutSwapBuffers(); // Troca os buffers para exibir
+        for (int i = 0; i < quantidadePontosTemporarios; i++)
+        {
+            glVertex2f(pontosTemporarios[i].x, pontosTemporarios[i].y);
+        }
+
+        glEnd();
+    }
 }
 
 void iniciarDesenhoPoligono()
