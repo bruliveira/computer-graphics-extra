@@ -93,6 +93,202 @@ ListaPoligonos *criarListaPoligonos()
     return listaPoligonos;
 }
 
+// Matrizes necessárias
+float **matrizPontos(float x, float y)
+{
+    float **mP = (float **)malloc(3 * sizeof(float *));
+    for (int i = 0; i < 3; i++)
+    {
+        mP[i] = (float *)malloc(sizeof(float));
+    }
+    mP[0][0] = x;
+    mP[1][0] = y;
+    mP[2][0] = 1.0;
+    return mP;
+}
+
+float **matrizTransforma(float tx, float ty)
+{
+    float **mT = (float **)malloc(3 * sizeof(float *));
+    for (int i = 0; i < 3; i++)
+    {
+        mT[i] = (float *)malloc(3 * sizeof(float));
+        for (int j = 0; j < 3; j++)
+        {
+            if (i == j)
+                mT[i][j] = 1.0;
+            else
+                mT[i][j] = 0;
+        }
+    }
+    mT[0][2] = tx;
+    mT[1][2] = ty;
+    return mT;
+}
+
+float **matrizRotaciona()
+{
+    float **mR = (float **)malloc(3 * sizeof(float *));
+    for (int i = 0; i < 3; i++)
+    {
+        mR[i] = (float *)malloc(3 * sizeof(float));
+        for (int j = 0; j < 3; j++)
+        {
+            if (i == j)
+                mR[i][j] = 1.0;
+            else
+                mR[i][j] = 0;
+        }
+    }
+    // Valores para rotacao de 30 graus
+    mR[0][0] = 0.8660;  // Valor cos
+    mR[0][1] = -0.5000; // Valor - sen
+    mR[1][0] = 0.5000;  // Valor + sen
+    mR[1][1] = 0.8660;  // Valor cos
+    return mR;
+}
+
+float **matrizMultiplica(float **m1, float **m2, int l, int c)
+{
+    float **r = (float **)malloc(l * sizeof(float *));
+    for (int i = 0; i < l; i++)
+    {
+        r[i] = (float *)malloc(c * sizeof(float));
+        for (int j = 0; j < c; j++)
+        {
+            r[i][j] = 0;
+            for (int k = 0; k < l; k++)
+            {
+                r[i][j] += m1[i][k] * m2[k][j];
+            }
+        }
+    }
+    return r;
+}
+
+float **matrizTranslada(float **mP, float **mT)
+{
+    float **r = (float **)malloc(3 * sizeof(float *));
+    for (int i = 0; i < 3; i++)
+    {
+        r[i] = (float *)malloc(sizeof(float));
+    }
+    r = matrizMultiplica(mT, mP, 3, 1);
+    return r;
+}
+
+void matrizFree(float **matriz, int linhas)
+{
+    for (int i = 0; i < linhas; i++)
+    {
+        free(matriz[i]);
+    }
+    free(matriz);
+}
+
+void imprimirMatriz(float **matriz, int linhas, int colunas)
+{
+    for (int i = 0; i < linhas; i++)
+    {
+        for (int j = 0; j < colunas; j++)
+        {
+            printf("%.2f ", matriz[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
+// Função para transladar um ponto em uma lista
+void transladarPonto(ListaPontos *listaPontos, int indice, float mx, float my)
+{
+    if (listaPontos == NULL || listaPontos->quantidadePontoLista == 0)
+    {
+        printf("Lista vazia ou ocorreu um erro inesperado.\n");
+    }
+    else
+    {
+        float dx = 1.0;
+        float dy = 3.0;
+
+        // float **mT = criarMatrizT(mx - listaPontos->pontos[indice].x, my - listaPontos->pontos[indice].y);
+        float **mT = matrizTransforma(dx, dy);
+        float **mP = matrizPontos(listaPontos->pontos[indice].x, listaPontos->pontos[indice].y);
+
+        printf("Matriz de Translação (mT):\n");
+        imprimirMatriz(mT, 3, 3);
+
+        printf("Matriz Ponto Original (mP):\n");
+        imprimirMatriz(mP, 3, 1);
+
+        float **r = matrizTranslada(mP, mT);
+
+        printf("Resultado da Translação (r = mT * mP):\n");
+        imprimirMatriz(r, 3, 1);
+
+        listaPontos->pontos[indice].x = r[0][0];
+        listaPontos->pontos[indice].y = r[1][0];
+    }
+}
+
+// Função para transladar uma reta em uma lista
+void transladarReta(ListaRetas *listaRetas, int indice, float mx, float my)
+{
+    if (listaRetas == NULL || listaRetas->quantidadeRetaLista == 0)
+    {
+        printf("Lista vazia ou ocorreu um erro inesperado.\n");
+    }
+    else
+    {
+        printf("Transladando Reta\n");
+
+        // Modificar os valores desejados de translação
+        float tx = 1.0; // Valor desejado de translação em x
+        float ty = 3.0; // Valor desejado de translação em y
+
+        // Criar a matriz de translação
+        float **mT = matrizTransforma(tx, ty);
+
+        printf("Matriz de Translação (mT):\n");
+        imprimirMatriz(mT, 3, 3);
+
+        // Criar matrizes para os pontos de início e fim
+        float **mPInicio = matrizPontos(listaRetas->retas[indice].pontoInicio.x, listaRetas->retas[indice].pontoInicio.y);
+        float **mPFim = matrizPontos(listaRetas->retas[indice].pontoFim.x, listaRetas->retas[indice].pontoFim.y);
+
+        printf("Matriz Ponto Inicial (mPInicio):\n");
+        imprimirMatriz(mPInicio, 3, 1);
+
+        printf("Matriz Ponto Final (mPFim):\n");
+        imprimirMatriz(mPFim, 3, 1);
+
+        // Transladar os pontos de início e fim
+        float **rInicio = matrizTranslada(mPInicio, mT);
+        float **rFim = matrizTranslada(mPFim, mT);
+
+        printf("Resultado da Translação (rInicio = mT * mPInicio):\n");
+        imprimirMatriz(rInicio, 3, 1);
+
+        printf("Resultado da Translação (rFim = mT * mPFim):\n");
+        imprimirMatriz(rFim, 3, 1);
+
+        listaRetas->retas[indice].pontoInicio.x = rInicio[0][0];
+        listaRetas->retas[indice].pontoInicio.y = rInicio[1][0];
+
+        listaRetas->retas[indice].pontoFim.x = rFim[0][0];
+        listaRetas->retas[indice].pontoFim.y = rFim[1][0];
+
+        // Liberar a memória alocada para as matrizes e vetores temporários
+        matrizFree(mPInicio, 3);
+        matrizFree(rInicio, 3);
+        matrizFree(mPFim, 3);
+        matrizFree(rFim, 3);
+
+        // Liberar a memória alocada para a matriz de translação
+        matrizFree(mT, 3);
+    }
+}
+
 void imprimirPontos(ListaPontos *listaPontos)
 {
     printf("\nQuantidade de pontos na lista: %d\n", listaPontos->quantidadePontoLista);
@@ -184,12 +380,12 @@ void menuTela()
     glutAddMenuEntry("Rotacionar Segmento de Reta", 11);
     glutAddMenuEntry("Rotacionar Polilinha", 12);
 
-    glutAddMenuEntry("Escalar Segmento de Reta", 14);
-    glutAddMenuEntry("Escalar Polilinha", 15);
+    glutAddMenuEntry("Escalar Segmento de Reta", 13);
+    glutAddMenuEntry("Escalar Polilinha", 14);
 
-    glutAddMenuEntry("Exportar formas", 16);
-    glutAddMenuEntry("Importar formas", 17);
-    glutAddMenuEntry("Sair", 18);
+    glutAddMenuEntry("Exportar formas", 15);
+    glutAddMenuEntry("Importar formas", 16);
+    glutAddMenuEntry("Sair", 17);
 
     glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
@@ -503,7 +699,7 @@ void mouseClick(int botao, int state, int x, int y)
     static Ponto aux[2];
     static Ponto auxPoligono[MAX_PONTOS_POLIGONO];
 
-    printf("\nValor: %d\n", opcaoEscolhida);
+    printf("\nOpção escolhida: %d\n", opcaoEscolhida);
 
     switch (opcaoEscolhida)
     {
@@ -536,7 +732,7 @@ void mouseClick(int botao, int state, int x, int y)
                 aux[1].y = 600 - y;
                 adicionarReta(listaReta, aux[0], aux[1]);
 
-                printf("\Quantidade: %d\n", listaReta->quantidadeRetaLista);
+                printf("\Qnuantidade: %d\n", listaReta->quantidadeRetaLista);
                 qtd_p = 0;
                 printf("Adicionada Reta com ponto final: (%.2f, %.2f)\n", aux[1].x, aux[1].y);
 
@@ -616,9 +812,27 @@ void mouseClick(int botao, int state, int x, int y)
         break;
     case 7:
         printf("-> Transladar Ponto\n");
+        {
+            // Verifica se o índice foi selecionado corretamente
+            if (selecionarPonto(listaPonto, x, 600 - y) != -1)
+            {
+                transladarPonto(listaPonto, selecionarPonto(listaPonto, x, 600 - y), x, y);
+                glutPostRedisplay();
+            }
+        }
         break;
     case 8:
         printf("-> Transladar Segmento de Reta");
+        if (botao == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+        {
+            // Verifica se o índice foi selecionado corretamente
+            int indiceRetaSelecionada = selecionarReta(listaReta, x, 600 - y);
+            if (indiceRetaSelecionada != -1)
+            {
+                transladarReta(listaReta, indiceRetaSelecionada, x, y);
+                glutPostRedisplay();
+            }
+        }
         break;
     case 9:
         printf("-> Transladar Polilinha\n");
@@ -626,26 +840,26 @@ void mouseClick(int botao, int state, int x, int y)
     case 10:
         printf("-> Rotacionar Ponto\n");
         break;
-    case 12:
+    case 11:
         printf("-> Rotacionar Segmento de Reta\n");
         break;
-    case 13:
+    case 12:
         printf("-> Rotacionar Polilinha\n");
         break;
-    case 14:
+    case 13:
         printf("-> Escalar Segmento de Reta\n");
         break;
-    case 15:
+    case 14:
         printf("-> Escalar Polilinha\n");
         break;
-    case 16:
+    case 15:
         printf("-> Exportar formas\n");
         if (state == GLUT_DOWN && botao == GLUT_LEFT_BUTTON)
         {
             salvarFormas();
         }
         break;
-    case 17:
+    case 16:
         printf("-> Importar formas\n");
         if (state == GLUT_DOWN && botao == GLUT_LEFT_BUTTON)
         {
@@ -654,7 +868,7 @@ void mouseClick(int botao, int state, int x, int y)
         }
 
         break;
-    case 18:
+    case 17:
         printf("-> Sair");
         exit(0);
         break;
@@ -725,18 +939,21 @@ void salvarFormas()
 
 void limparListas()
 {
+    // Limpar lista de pontos
     if (listaPonto != NULL)
     {
         free(listaPonto);
         listaPonto = criarListaPontos();
     }
 
+    // Limpar lista de retas
     if (listaReta != NULL)
     {
         free(listaReta);
         listaReta = criarListaRetas();
     }
 
+    // Limpar lista de polígonos
     if (listaPoligono != NULL)
     {
         free(listaPoligono);
@@ -758,7 +975,7 @@ void carregarFormas()
     limparListas();
 
     char linha[256];
-    int numeroLados;
+    int numeroLados; // Declare a variável numeroLados aqui
 
     while (fgets(linha, sizeof(linha), arquivo) != NULL)
     {
@@ -840,12 +1057,19 @@ int main(int argc, char **argv)
     Ponto pontoInicial2 = {5.0, 300.0};
     Ponto pontoFinal2 = {790.0, 300.0};
 
+    Ponto pontoInicial3 = {3.0, 2.0};
+    Ponto pontoFinal3 = {50.0, 40.0};
+
     listaReta->retas[listaReta->quantidadeRetaLista].pontoInicio = pontoInicial1;
     listaReta->retas[listaReta->quantidadeRetaLista].pontoFim = pontoFinal1;
     listaReta->quantidadeRetaLista++;
 
     listaReta->retas[listaReta->quantidadeRetaLista].pontoInicio = pontoInicial2;
     listaReta->retas[listaReta->quantidadeRetaLista].pontoFim = pontoFinal2;
+    listaReta->quantidadeRetaLista++;
+
+    listaReta->retas[listaReta->quantidadeRetaLista].pontoInicio = pontoInicial3;
+    listaReta->retas[listaReta->quantidadeRetaLista].pontoFim = pontoFinal3;
     listaReta->quantidadeRetaLista++;
 
     // Adiciona alguns polígonos para teste
