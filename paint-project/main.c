@@ -52,17 +52,67 @@ typedef struct
     int quantidadePoligonoLista;
 } ListaPoligonos;
 
+ListaPontos *criarListaPontos();
+ListaRetas *criarListaRetas();
+ListaPoligonos *criarListaPoligonos();
+float **matrizPontos(float x, float y);
+float **matrizTransforma(float x, float y);
+float **matrizRotaciona();
+float **matrizMultiplica(float **m1, float **m2, int l, int c);
+float **matrizTranslada(float **mP, float **mT);
+void matrizFree(float **matriz, int linhas);
+void imprimirMatriz(float **matriz, int linhas, int colunas);
+void transladarPonto(ListaPontos *listaPontos, int indice, float mx, float my);
+void transladarReta(ListaRetas *listaRetas, int indice, float mx, float my);
+void rotacionarPonto(ListaPontos *listaPontos, int indice);
+void rotacionarReta(ListaRetas *listaRetas, int indice);
+int listaPontosVazia(ListaPontos *listaPontos);
+int listaPontosCheia(ListaPontos *listaPontos);
+int listaRetasVazia(ListaRetas *listaRetas);
+int listaRetasCheia(ListaRetas *listaRetas);
+int listaPoligonosVazia(ListaPoligonos *listaPoligonos);
+int listaPoligonosCheia(ListaPoligonos *listaPoligonos);
+void imprimirPontos(ListaPontos *listaPontos);
+void imprimirRetas(ListaRetas *listaRetas);
+void imprimirPoligonos(ListaPoligonos *listaPoligonos);
+void opcaoMenu(int opcao);
+void menuTela();
+void adicionarPonto(ListaPontos *listaPontos, float x, float y);
+void adicionarReta(ListaRetas *listaRetas, Ponto ponto1, Ponto ponto2);
+void adicionarPoligono(ListaPoligonos *listaPoligonos, Poligono poligono);
+int pontoNaReta(float mx, float my, Reta reta);
+void excluirPonto(ListaPontos *listaPontos, int indice);
+void excluirReta(ListaRetas *listaRetas, int indice);
+int selecionarPonto(ListaPontos *listaPontos, float px, float py);
+int selecionarReta(ListaRetas *listaRetas, float mx, float my);
+int pontoNoPoligono(float mx, float my, Poligono poligono);
+void excluirPoligono(ListaPoligonos *listaPoligonos, int indice);
+int selecionarPoligono(ListaPoligonos *listaPoligonos, float mx, float my);
+void desenhaListaPontos(ListaPontos *listaPontos);
+void desenhaListaRetas(ListaRetas *listaRetas);
+void desenhaPoligono(ListaPoligonos *listaPoligonos);
+void iniciarDesenhoPoligono();
+void mouseClick(int botao, int state, int x, int y);
+void keyboardFunc(unsigned char key, int x, int y);
+void salvarFormas();
+void limparListas();
+void carregarFormas();
+int init(void);
+void display(void);
+int main(int argc, char **argv);
+
 ListaPontos *listaPonto;
 ListaRetas *listaReta;
 ListaPoligonos *listaPoligono;
 /// ListaPoligonos *listaPoligonos;
 
-int desenhando = 0; // Flag para indicar se o usuário está desenhando
+int desenhando = 0; // Indicar se o usuário está desenhando
 int opcaoEscolhida = 0;
-int desenhandoPoligono = 0; // Flag para indicar se estamos desenhando um polígono
+int desenhandoPoligono = 0; // Indicar se estamos desenhando um polígono
 Ponto pontosTemporarios[MAX_PONTOS];
 int quantidadePontosTemporarios = 0;
 
+// Criação das listas
 ListaPontos *criarListaPontos()
 {
     ListaPontos *listaPontos = (ListaPontos *)malloc(sizeof(ListaPontos));
@@ -107,7 +157,7 @@ float **matrizPontos(float x, float y)
     return mP;
 }
 
-float **matrizTransforma(float tx, float ty)
+float **matrizTransforma(float x, float y)
 {
     float **mT = (float **)malloc(3 * sizeof(float *));
     for (int i = 0; i < 3; i++)
@@ -121,8 +171,8 @@ float **matrizTransforma(float tx, float ty)
                 mT[i][j] = 0;
         }
     }
-    mT[0][2] = tx;
-    mT[1][2] = ty;
+    mT[0][2] = x;
+    mT[1][2] = y;
     return mT;
 }
 
@@ -199,8 +249,8 @@ void imprimirMatriz(float **matriz, int linhas, int colunas)
     printf("\n");
 }
 
-// Função para transladar um ponto em uma lista
-void transladarPonto(ListaPontos *listaPontos, int indice, float mx, float my)
+// Funções para transladar
+void transladarPonto(ListaPontos *listaPontos, int index, float mx, float my)
 {
     if (listaPontos == NULL || listaPontos->quantidadePontoLista == 0)
     {
@@ -211,9 +261,8 @@ void transladarPonto(ListaPontos *listaPontos, int indice, float mx, float my)
         float dx = 1.0;
         float dy = 3.0;
 
-        // float **mT = criarMatrizT(mx - listaPontos->pontos[indice].x, my - listaPontos->pontos[indice].y);
         float **mT = matrizTransforma(dx, dy);
-        float **mP = matrizPontos(listaPontos->pontos[indice].x, listaPontos->pontos[indice].y);
+        float **mP = matrizPontos(listaPontos->pontos[index].x, listaPontos->pontos[index].y);
 
         printf("Matriz de Translação (mT):\n");
         imprimirMatriz(mT, 3, 3);
@@ -226,13 +275,11 @@ void transladarPonto(ListaPontos *listaPontos, int indice, float mx, float my)
         printf("Resultado da Translação (r = mT * mP):\n");
         imprimirMatriz(r, 3, 1);
 
-        listaPontos->pontos[indice].x = r[0][0];
-        listaPontos->pontos[indice].y = r[1][0];
+        listaPontos->pontos[index].x = r[0][0];
+        listaPontos->pontos[index].y = r[1][0];
     }
 }
-
-// Função para transladar uma reta em uma lista
-void transladarReta(ListaRetas *listaRetas, int indice, float mx, float my)
+void transladarReta(ListaRetas *listaRetas, int index, float mx, float my)
 {
     if (listaRetas == NULL || listaRetas->quantidadeRetaLista == 0)
     {
@@ -241,20 +288,17 @@ void transladarReta(ListaRetas *listaRetas, int indice, float mx, float my)
     else
     {
         printf("Transladando Reta\n");
+        // valores desejados de translação
+        float tx = 1.0;
+        float ty = 3.0;
 
-        // Modificar os valores desejados de translação
-        float tx = 1.0; // Valor desejado de translação em x
-        float ty = 3.0; // Valor desejado de translação em y
-
-        // Criar a matriz de translação
         float **mT = matrizTransforma(tx, ty);
 
         printf("Matriz de Translação (mT):\n");
         imprimirMatriz(mT, 3, 3);
 
-        // Criar matrizes para os pontos de início e fim
-        float **mPInicio = matrizPontos(listaRetas->retas[indice].pontoInicio.x, listaRetas->retas[indice].pontoInicio.y);
-        float **mPFim = matrizPontos(listaRetas->retas[indice].pontoFim.x, listaRetas->retas[indice].pontoFim.y);
+        float **mPInicio = matrizPontos(listaRetas->retas[index].pontoInicio.x, listaRetas->retas[index].pontoInicio.y);
+        float **mPFim = matrizPontos(listaRetas->retas[index].pontoFim.x, listaRetas->retas[index].pontoFim.y);
 
         printf("Matriz Ponto Inicial (mPInicio):\n");
         imprimirMatriz(mPInicio, 3, 1);
@@ -272,47 +316,138 @@ void transladarReta(ListaRetas *listaRetas, int indice, float mx, float my)
         printf("Resultado da Translação (rFim = mT * mPFim):\n");
         imprimirMatriz(rFim, 3, 1);
 
-        listaRetas->retas[indice].pontoInicio.x = rInicio[0][0];
-        listaRetas->retas[indice].pontoInicio.y = rInicio[1][0];
+        listaRetas->retas[index].pontoInicio.x = rInicio[0][0];
+        listaRetas->retas[index].pontoInicio.y = rInicio[1][0];
 
-        listaRetas->retas[indice].pontoFim.x = rFim[0][0];
-        listaRetas->retas[indice].pontoFim.y = rFim[1][0];
+        listaRetas->retas[index].pontoFim.x = rFim[0][0];
+        listaRetas->retas[index].pontoFim.y = rFim[1][0];
 
-        // Liberar a memória alocada para as matrizes e vetores temporários
+        // Liberar a memória alocada
         matrizFree(mPInicio, 3);
         matrizFree(rInicio, 3);
         matrizFree(mPFim, 3);
         matrizFree(rFim, 3);
-
-        // Liberar a memória alocada para a matriz de translação
         matrizFree(mT, 3);
     }
+}
+
+// Funções para rotacionar
+void rotacionarPonto(ListaPontos *listaPontos, int index)
+{
+    if (listaPontos == NULL || listaPontos->quantidadePontoLista == 0)
+    {
+        printf("Lista vazia ou ocorreu um erro inesperado.\n");
+    }
+    else
+    {
+        float **mR = matrizRotaciona();
+        float **mP = matrizPontos(listaPontos->pontos[index].x, listaPontos->pontos[index].y);
+
+        printf("Matriz de Rotação (mR):\n");
+        imprimirMatriz(mR, 3, 3);
+
+        printf("Matriz Ponto Original (mP):\n");
+        imprimirMatriz(mP, 3, 1);
+
+        float **r = matrizMultiplica(mR, mP, 3, 1);
+
+        printf("Resultado da Rotação (r = mR * mP):\n");
+        imprimirMatriz(r, 3, 1);
+
+        listaPontos->pontos[index].x = r[0][0];
+        listaPontos->pontos[index].y = r[1][0];
+
+        printf("Coordenadas do Ponto Rotacionado (x, y): %.2f, %.2f\n", listaPontos->pontos[index].x, listaPontos->pontos[index].y);
+    }
+}
+void rotacionarReta(ListaRetas *listaRetas, int index)
+{
+    if (listaRetas == NULL || listaRetas->quantidadeRetaLista == 0)
+    {
+        printf("Lista vazia ou ocorreu um erro inesperado.\n");
+    }
+    else
+    {
+        float **mR = matrizRotaciona();
+
+        printf("Matriz de Rotação (mR):\n");
+        imprimirMatriz(mR, 3, 3);
+
+        float **mPInicio = matrizPontos(listaRetas->retas[index].pontoInicio.x, listaRetas->retas[index].pontoInicio.y);
+        printf("Matriz Ponto Inicial (mPInicio):\n");
+        imprimirMatriz(mPInicio, 3, 1);
+
+        float **rInicio = matrizMultiplica(mR, mPInicio, 3, 1);
+        printf("Resultado da Rotação (rInicio = mR * mPInicio):\n");
+        imprimirMatriz(rInicio, 3, 1);
+
+        listaRetas->retas[index].pontoInicio.x = rInicio[0][0];
+        listaRetas->retas[index].pontoInicio.y = rInicio[1][0];
+
+        float **mPFim = matrizPontos(listaRetas->retas[index].pontoFim.x, listaRetas->retas[index].pontoFim.y);
+        printf("Matriz Ponto Final (mPFim):\n");
+        imprimirMatriz(mPFim, 3, 1);
+
+        float **rFim = matrizMultiplica(mR, mPFim, 3, 1);
+        printf("Resultado da Rotação (rFim = mR * mPFim):\n");
+        imprimirMatriz(rFim, 3, 1);
+
+        listaRetas->retas[index].pontoFim.x = rFim[0][0];
+        listaRetas->retas[index].pontoFim.y = rFim[1][0];
+
+        matrizFree(mPInicio, 3);
+        matrizFree(rInicio, 3);
+        matrizFree(mPFim, 3);
+        matrizFree(rFim, 3);
+        matrizFree(mR, 3);
+    }
+}
+
+// Validações de listas vazias/cheias, extras
+int listaPontosVazia(ListaPontos *listaPontos)
+{
+    return listaPontos->quantidadePontoLista == 0 ? 1 : 0;
+}
+int listaPontosCheia(ListaPontos *listaPontos)
+{
+    return listaPontos->quantidadePontoLista == MAX_PONTOS ? 1 : 0;
+}
+int listaRetasVazia(ListaRetas *listaRetas)
+{
+    return listaRetas->quantidadeRetaLista == 0 ? 1 : 0;
+}
+int listaRetasCheia(ListaRetas *listaRetas)
+{
+    return listaRetas->quantidadeRetaLista == MAX_RETAS ? 1 : 0;
+}
+int listaPoligonosVazia(ListaPoligonos *listaPoligonos)
+{
+    return listaPoligonos->quantidadePoligonoLista == 0 ? 1 : 0;
+}
+int listaPoligonosCheia(ListaPoligonos *listaPoligonos)
+{
+    return listaPoligonos->quantidadePoligonoLista == MAX_NUMERO_POLIGONO ? 1 : 0;
 }
 
 void imprimirPontos(ListaPontos *listaPontos)
 {
     printf("\nQuantidade de pontos na lista: %d\n", listaPontos->quantidadePontoLista);
-
     for (int i = 0; i < listaPontos->quantidadePontoLista; i++)
     {
         printf("Ponto %d: (%.2f, %.2f)\n", i + 1, listaPontos->pontos[i].x, listaPontos->pontos[i].y);
     }
 }
-
 void imprimirRetas(ListaRetas *listaRetas)
 {
     printf("\nQuantidade de retas na lista: %d\n", listaRetas->quantidadeRetaLista);
-
     for (int i = 0; i < listaRetas->quantidadeRetaLista; i++)
     {
         printf("Reta %d: (%.2f, %.2f) - Ponto final (%.2f, %.2f)\n", i + 1, listaRetas->retas[i].pontoInicio.x, listaRetas->retas[i].pontoInicio.y, listaRetas->retas[i].pontoFim.x, listaRetas->retas[i].pontoFim.y);
     }
 }
-
 void imprimirPoligonos(ListaPoligonos *listaPoligonos)
 {
     printf("\nQuantidade de polígonos na lista: %d\n", listaPoligonos->quantidadePoligonoLista);
-
     for (int i = 0; i < listaPoligonos->quantidadePoligonoLista; i++)
     {
         printf("Polígono %d:\n", i + 1);
@@ -323,43 +458,10 @@ void imprimirPoligonos(ListaPoligonos *listaPoligonos)
     }
     printf("Fim da lista de polígonos\n");
 }
-
-// Validações de listas vazias/cheias
-int listaPontosVazia(ListaPontos *listaPontos)
-{
-    return listaPontos->quantidadePontoLista == 0 ? 1 : 0;
-}
-
-int listaPontosCheia(ListaPontos *listaPontos)
-{
-    return listaPontos->quantidadePontoLista == MAX_PONTOS ? 1 : 0;
-}
-
-int listaRetasVazia(ListaRetas *listaRetas)
-{
-    return listaRetas->quantidadeRetaLista == 0 ? 1 : 0;
-}
-
-int listaRetasCheia(ListaRetas *listaRetas)
-{
-    return listaRetas->quantidadeRetaLista == MAX_RETAS ? 1 : 0;
-}
-
-int listaPoligonosVazia(ListaPoligonos *listaPoligonos)
-{
-    return listaPoligonos->quantidadePoligonoLista == 0 ? 1 : 0;
-}
-
-int listaPoligonosCheia(ListaPoligonos *listaPoligonos)
-{
-    return listaPoligonos->quantidadePoligonoLista == MAX_NUMERO_POLIGONO ? 1 : 0;
-}
-
 void opcaoMenu(int opcao)
 {
     opcaoEscolhida = opcao;
 }
-
 void menuTela()
 {
     glutCreateMenu(opcaoMenu);
@@ -395,7 +497,7 @@ void adicionarPonto(ListaPontos *listaPontos, float x, float y)
     if (listaPontos == NULL)
         printf("Poxa, ocorreu um erro ao adiconar Ponto na lista\n");
     else if (listaPontosCheia(listaPontos) == 1)
-        printf("Que pena, atingiu a quantidade máxima da lista\n");
+        printf("Que pena, você atingiu a quantidade máxima da lista\n");
     else
     {
         listaPontos->pontos[listaPontos->quantidadePontoLista].x = x;
@@ -403,13 +505,12 @@ void adicionarPonto(ListaPontos *listaPontos, float x, float y)
         listaPontos->quantidadePontoLista++;
     }
 }
-
 void adicionarReta(ListaRetas *listaRetas, Ponto ponto1, Ponto ponto2)
 {
     if (listaRetas == NULL)
         printf("Poxa, ocorreu um erro ao adiconar Reta na lista\n");
     else if (listaRetasCheia(listaRetas) == 1)
-        printf("Que pena, atingiu a quantidade máxima da lista\n");
+        printf("Que pena, você já atingiu a quantidade máxima da lista\n");
     else
     {
         listaRetas->retas[listaRetas->quantidadeRetaLista].pontoInicio = ponto1;
@@ -417,7 +518,6 @@ void adicionarReta(ListaRetas *listaRetas, Ponto ponto1, Ponto ponto2)
         listaRetas->quantidadeRetaLista++;
     }
 }
-
 void adicionarPoligono(ListaPoligonos *listaPoligonos, Poligono poligono)
 {
     if (listaPoligonos == NULL)
@@ -441,40 +541,24 @@ void adicionarPoligono(ListaPoligonos *listaPoligonos, Poligono poligono)
     }
 }
 
-void desenhaListaPontos(ListaPontos *listaPontos)
-{
-    // printf("Desenhando Pontos...\n");
-    glPointSize(6.0);
-    glColor3f(1.0, 0.0, 0.0);
-    glBegin(GL_POINTS);
-    for (int i = 0; i < listaPontos->quantidadePontoLista; i++)
-    {
-        glVertex2f(listaPontos->pontos[i].x, listaPontos->pontos[i].y);
-    }
-    glEnd();
-}
-
 int pontoNaReta(float mx, float my, Reta reta)
 {
-    // Adicione esses prints para debug
     printf("\n\nmx: %.2f, my: %.2f\n", mx, my);
     printf("reta.pontoInicio.x: %.2f, reta.pontoInicio.y: %.2f\n", reta.pontoInicio.x, reta.pontoInicio.y);
     printf("reta.pontoFim.x: %.2f, reta.pontoFim.y: %.2f\n", reta.pontoFim.x, reta.pontoFim.y);
 
-    // Verifica se o ponto (mx, my) está dentro da tolerância da reta
     if (mx >= fmin(reta.pontoInicio.x, reta.pontoFim.x) - TOLERANCIA &&
         mx <= fmax(reta.pontoInicio.x, reta.pontoFim.x) + TOLERANCIA &&
         my >= fmin(reta.pontoInicio.y, reta.pontoFim.y) - TOLERANCIA &&
         my <= fmax(reta.pontoInicio.y, reta.pontoFim.y) + TOLERANCIA)
     {
         printf("Ponto está dentro da tolerância da reta.\n");
-        return 1; // Ponto está dentro da tolerância da reta
+        return 1;
     }
 
-    printf("Ponto NÃO está dentro da tolerância da reta.\n");
-    return 0; // Ponto não está dentro da tolerância da reta
+    printf("Ponto N está dentro da tolerância da reta.\n");
+    return 0;
 }
-
 void excluirPonto(ListaPontos *listaPontos, int indice)
 {
     if (listaPontos == NULL || listaPontosVazia(listaPontos) == 1)
@@ -494,10 +578,8 @@ void excluirPonto(ListaPontos *listaPontos, int indice)
         printf("Ponto excluído com sucesso.\n");
     }
 }
-
 void excluirReta(ListaRetas *listaRetas, int indice)
 {
-    printf("\nSó na função mesmo\n");
     if (listaRetas == NULL || listaRetasVazia(listaRetas) == 1)
         printf("\nLista vazia ou ocorreu um erro inesperado.\n");
     else if (indice < 0 || indice >= listaRetas->quantidadeRetaLista)
@@ -519,13 +601,12 @@ void excluirReta(ListaRetas *listaRetas, int indice)
         printf("Reta excluída com sucesso.\n");
     }
 }
-
 int selecionarPonto(ListaPontos *listaPontos, float px, float py)
 {
     if (listaPontos == NULL || listaPontos->quantidadePontoLista == 0)
     {
         printf("Que pena! Lista vazia ou ocorreu um erro inesperado.\n");
-        return -1; // Adiciona um valor de retorno indicando erro
+        return -1;
     }
     else
     {
@@ -540,24 +621,21 @@ int selecionarPonto(ListaPontos *listaPontos, float px, float py)
                 }
             }
         }
-
-        printf("Nenhum ponto selecionado nas coordenadas (%.2f, %.2f)\n", px, py);
-        return -1; // Adiciona um valor de retorno indicando que nenhum ponto foi encontrado
+        printf("Nenhum ponto selecionado - coordenadas (%.2f, %.2f)\n", px, py);
+        return -1;
     }
 }
-
 int selecionarReta(ListaRetas *listaRetas, float mx, float my)
 {
     if (listaRetas == NULL || listaRetas->quantidadeRetaLista == 0)
     {
         printf("Lista de retas vazia ou ocorreu um erro inesperado.\n");
-        return -1; // Adiciona um valor de retorno indicando erro
+        return -1;
     }
     else
     {
         for (int i = 0; i < listaRetas->quantidadeRetaLista; i++)
         {
-            // Verifica se (mx, my) está dentro da tolerância da reta
             if (pontoNaReta(mx, my, listaRetas->retas[i]))
             {
                 printf("Reta selecionada: (%.2f, %.2f) - Ponto final (%.2f, %.2f), Índice: %d\n",
@@ -568,13 +646,10 @@ int selecionarReta(ListaRetas *listaRetas, float mx, float my)
                 return i;
             }
         }
-
         printf("Nenhuma reta selecionada nas coordenadas (%.2f, %.2f)\n", mx, my);
-        return -1; // Adiciona um valor de retorno indicando que nenhuma reta foi encontrada
+        return -1;
     }
 }
-
-// Função para verificar se um ponto (mx, my) está dentro da tolerância do polígono
 int pontoNoPoligono(float mx, float my, Poligono poligono)
 {
     int i, j, c = 0;
@@ -588,8 +663,6 @@ int pontoNoPoligono(float mx, float my, Poligono poligono)
     }
     return c;
 }
-
-// Função para excluir um polígono da lista
 void excluirPoligono(ListaPoligonos *listaPoligonos, int indice)
 {
     if (listaPoligonos == NULL || listaPoligonosVazia(listaPoligonos) == 1)
@@ -608,41 +681,44 @@ void excluirPoligono(ListaPoligonos *listaPoligonos, int indice)
             listaPoligonos->poligonos[i] = listaPoligonos->poligonos[i + 1];
         }
         listaPoligonos->quantidadePoligonoLista--;
-
         printf("Polígono excluído com sucesso.\n");
-
-        glutPostRedisplay(); // Solicita a atualização da tela
+        glutPostRedisplay();
     }
 }
-
-// Função para selecionar um polígono com base em coordenadas (mx, my)
 int selecionarPoligono(ListaPoligonos *listaPoligonos, float mx, float my)
 {
     if (listaPoligonos == NULL || listaPoligonos->quantidadePoligonoLista == 0)
     {
         printf("Lista de polígonos vazia ou ocorreu um erro inesperado.\n");
-        return -1; // Adiciona um valor de retorno indicando erro
+        return -1;
     }
     else
     {
         for (int i = 0; i < listaPoligonos->quantidadePoligonoLista; i++)
         {
-            // Verifica se (mx, my) está dentro da tolerância do polígono
             if (pontoNoPoligono(mx, my, listaPoligonos->poligonos[i]))
             {
                 printf("Polígono selecionado. Índice: %d\n", i);
                 return i;
             }
         }
-
         printf("Nenhum polígono selecionado nas coordenadas (%.2f, %.2f)\n", mx, my);
-        return -1; // Adiciona um valor de retorno indicando que nenhum polígono foi encontrado
+        return -1;
     }
 }
-
+void desenhaListaPontos(ListaPontos *listaPontos)
+{
+    glPointSize(6.0);
+    glColor3f(1.0, 0.0, 0.0);
+    glBegin(GL_POINTS);
+    for (int i = 0; i < listaPontos->quantidadePontoLista; i++)
+    {
+        glVertex2f(listaPontos->pontos[i].x, listaPontos->pontos[i].y);
+    }
+    glEnd();
+}
 void desenhaListaRetas(ListaRetas *listaRetas)
 {
-    // printf("Desenhando Retas...\n");
     glLineWidth(3.0);
     glColor3f(0.0, 0.0, 0.0);
     glBegin(GL_LINES);
@@ -653,10 +729,8 @@ void desenhaListaRetas(ListaRetas *listaRetas)
     }
     glEnd();
 }
-
 void desenhaPoligono(ListaPoligonos *listaPoligonos)
 {
-    // printf("Desenhando polígonos...\n");
     glLineWidth(3.0);
     for (int i = 0; i < listaPoligonos->quantidadePoligonoLista; i++)
     {
@@ -673,7 +747,7 @@ void desenhaPoligono(ListaPoligonos *listaPoligonos)
     if (desenhandoPoligono && quantidadePontosTemporarios > 0)
     {
         glBegin(GL_LINE_STRIP);
-        glColor3f(0, 0, 1); // Cor azul
+        glColor3f(0, 0, 1);
 
         for (int i = 0; i < quantidadePontosTemporarios; i++)
         {
@@ -683,14 +757,12 @@ void desenhaPoligono(ListaPoligonos *listaPoligonos)
         glEnd();
     }
 }
-
 void iniciarDesenhoPoligono()
 {
     desenhandoPoligono = 1;
     quantidadePontosTemporarios = 0;
-    glutPostRedisplay(); // Solicita a atualização da tela
+    glutPostRedisplay();
 }
-
 void mouseClick(int botao, int state, int x, int y)
 {
     static int aguardandoSegundoPonto = 0;
@@ -700,7 +772,6 @@ void mouseClick(int botao, int state, int x, int y)
     static Ponto auxPoligono[MAX_PONTOS_POLIGONO];
 
     printf("\nOpção escolhida: %d\n", opcaoEscolhida);
-
     switch (opcaoEscolhida)
     {
     case 0:
@@ -732,7 +803,7 @@ void mouseClick(int botao, int state, int x, int y)
                 aux[1].y = 600 - y;
                 adicionarReta(listaReta, aux[0], aux[1]);
 
-                printf("\Qnuantidade: %d\n", listaReta->quantidadeRetaLista);
+                printf("\nQuantidade: %d\n", listaReta->quantidadeRetaLista);
                 qtd_p = 0;
                 printf("Adicionada Reta com ponto final: (%.2f, %.2f)\n", aux[1].x, aux[1].y);
 
@@ -746,37 +817,28 @@ void mouseClick(int botao, int state, int x, int y)
         {
             if (!desenhandoPoligono)
             {
-                printf("\nEntrou aqui");
                 iniciarDesenhoPoligono();
             }
-
             if (quantidadePontosTemporarios < MAX_PONTOS_POLIGONO)
             {
-                printf("\nEntrou aqui: quantidadePontosTemporarios < MAX_PONTOS_POLYGON");
                 pontosTemporarios[quantidadePontosTemporarios].x = x;
                 pontosTemporarios[quantidadePontosTemporarios].y = glutGet(GLUT_WINDOW_HEIGHT) - y; // Invertendo a coordenada y
                 quantidadePontosTemporarios++;
-
                 // Adiciona o ponto temporário ao polígono e desenha a forma
                 if (quantidadePontosTemporarios > 1)
                 {
                     printf("Outro if de temporarios\n");
                     glBegin(GL_LINE_STRIP);
                     glColor3f(0, 0, 1);
-
                     for (int i = 0; i < quantidadePontosTemporarios; i++)
                     {
                         glVertex2f(pontosTemporarios[i].x, pontosTemporarios[i].y);
-                        printf("valores: %d", pontosTemporarios[i].x);
                     }
-
                     glEnd();
-
-                    glutSwapBuffers(); // Troca os buffers para exibir
+                    glutSwapBuffers();
                 }
             }
         }
-
         break;
     case 4:
         printf("-> Selecionar/Excluir Ponto\n");
@@ -799,21 +861,16 @@ void mouseClick(int botao, int state, int x, int y)
 
         if (botao == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
         {
-            // Verifica se há algum polígono nas coordenadas do clique direito
             int indicePoligonoSelecionado = selecionarPoligono(listaPoligono, x, glutGet(GLUT_WINDOW_HEIGHT) - y);
-
             if (indicePoligonoSelecionado != -1)
             {
-                // Exclui o polígono selecionado
                 excluirPoligono(listaPoligono, indicePoligonoSelecionado);
             }
         }
-
         break;
     case 7:
         printf("-> Transladar Ponto\n");
         {
-            // Verifica se o índice foi selecionado corretamente
             if (selecionarPonto(listaPonto, x, 600 - y) != -1)
             {
                 transladarPonto(listaPonto, selecionarPonto(listaPonto, x, 600 - y), x, y);
@@ -825,7 +882,6 @@ void mouseClick(int botao, int state, int x, int y)
         printf("-> Transladar Segmento de Reta");
         if (botao == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
         {
-            // Verifica se o índice foi selecionado corretamente
             int indiceRetaSelecionada = selecionarReta(listaReta, x, 600 - y);
             if (indiceRetaSelecionada != -1)
             {
@@ -839,9 +895,26 @@ void mouseClick(int botao, int state, int x, int y)
         break;
     case 10:
         printf("-> Rotacionar Ponto\n");
+        if (botao == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+        {
+            if (selecionarPonto(listaPonto, x, 600 - y) != -1)
+            {
+                rotacionarPonto(listaPonto, selecionarPonto(listaPonto, x, 600 - y));
+                glutPostRedisplay();
+            }
+        }
         break;
     case 11:
         printf("-> Rotacionar Segmento de Reta\n");
+        if (botao == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+        {
+            int indiceRetaSelecionada = selecionarReta(listaReta, x, 600 - y);
+            if (indiceRetaSelecionada != -1)
+            {
+                rotacionarReta(listaReta, indiceRetaSelecionada);
+                glutPostRedisplay();
+            }
+        }
         break;
     case 12:
         printf("-> Rotacionar Polilinha\n");
@@ -864,9 +937,8 @@ void mouseClick(int botao, int state, int x, int y)
         if (state == GLUT_DOWN && botao == GLUT_LEFT_BUTTON)
         {
             carregarFormas();
-            glutPostRedisplay(); // Atualiza a tela após a importação
+            glutPostRedisplay();
         }
-
         break;
     case 17:
         printf("-> Sair");
@@ -876,7 +948,6 @@ void mouseClick(int botao, int state, int x, int y)
         break;
     }
 }
-
 void keyboardFunc(unsigned char key, int x, int y)
 {
     if (key == 13 || key == 32) // Enter ou Espaço
@@ -889,17 +960,15 @@ void keyboardFunc(unsigned char key, int x, int y)
                 novoPoligono.pontos[i] = pontosTemporarios[i];
             }
             novoPoligono.quantidadePontosPoligono = quantidadePontosTemporarios;
-
             adicionarPoligono(listaPoligono, novoPoligono);
 
             desenhandoPoligono = 0;
             quantidadePontosTemporarios = 0;
 
-            glutPostRedisplay(); // Solicita a atualização da tela
+            glutPostRedisplay();
         }
     }
 }
-
 void salvarFormas()
 {
     FILE *arquivo = fopen("formas.txt", "w");
@@ -933,34 +1002,26 @@ void salvarFormas()
     }
 
     fclose(arquivo);
-
     printf("Formas salvas no arquivo formas.txt.\n");
 }
-
 void limparListas()
 {
-    // Limpar lista de pontos
     if (listaPonto != NULL)
     {
         free(listaPonto);
         listaPonto = criarListaPontos();
     }
-
-    // Limpar lista de retas
     if (listaReta != NULL)
     {
         free(listaReta);
         listaReta = criarListaRetas();
     }
-
-    // Limpar lista de polígonos
     if (listaPoligono != NULL)
     {
         free(listaPoligono);
         listaPoligono = criarListaPoligonos();
     }
 }
-
 void carregarFormas()
 {
     FILE *arquivo = fopen("formas.txt", "r");
@@ -971,11 +1032,9 @@ void carregarFormas()
         return;
     }
 
-    // Limpar listas existentes antes de carregar
     limparListas();
-
     char linha[256];
-    int numeroLados; // Declare a variável numeroLados aqui
+    int numeroLados;
 
     while (fgets(linha, sizeof(linha), arquivo) != NULL)
     {
@@ -998,43 +1057,35 @@ void carregarFormas()
             }
         }
     }
-
     fclose(arquivo);
-
     printf("Formas carregadas do arquivo formas.txt.\n");
 }
-
 int init(void)
 {
     glClearColor(1.0, 1.0, 1.0, 0.0); // Cor de fundo
     glMatrixMode(GL_PROJECTION);      // Matriz de projeção
     gluOrtho2D(0.0, 800.0, 0.0, 600.0);
 }
-
 void display(void)
 {
     glClear(GL_COLOR_BUFFER_BIT); // Desenha o fundo - limpa tela
-
-    // Adicionais
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    // fim adicionais
 
-    // Desenha os pontos
-    desenhaListaPontos(listaPonto); // Certifique-se de que a variável 'lista' está acessível aqui
+    desenhaListaPontos(listaPonto);
     desenhaListaRetas(listaReta);
     desenhaPoligono(listaPoligono);
 
-    glFlush(); // Desenha os comandos
+    glFlush();
 }
 
 int main(int argc, char **argv)
 {
     setlocale(LC_ALL, "Portuguese_Brazil.1252");
-    glutInit(&argc, argv);                      // Inicializa o glut
-    glutInitDisplayMode(GLUT_DEPTH | GLUT_RGB); // Modo de display
-    glutInitWindowSize(800, 600);               // Largura e altura da janela de exibição
-    glutCreateWindow("Paint - Versão final");   // Criação da janela de exibição
+    glutInit(&argc, argv);                        // Inicializa o glut
+    glutInitDisplayMode(GLUT_DEPTH | GLUT_RGB);   // Modo de display
+    glutInitWindowSize(800, 600);                 // Largura e altura da janela de exibição
+    glutCreateWindow("Paint: Bruna e Valdimiro"); // Criação da janela de exibição
 
     // Inicializa as listas
     listaPonto = criarListaPontos();
@@ -1105,16 +1156,16 @@ int main(int argc, char **argv)
     printf("Lista cheia - Retas: %s\n", listaRetasCheia(listaReta) ? "Sim" : "Nao");
 
     printf("Lista vazia - Polilinha: %s\n", listaPoligonosVazia(listaPoligono) ? "Sim" : "Nao");
-    printf("Lista cheia - Polilinha: %s\n", listaPoligonosCheia(listaPoligono) ? "Sim" : "Nao");
+    printf("Lista cheia - Polilinha: %s\n\n", listaPoligonosCheia(listaPoligono) ? "Sim" : "Nao");
 
     menuTela();
 
     init(); // Executa a função de inicialização
 
-    glutDisplayFunc(display); // Deixa como a função callback de exibição
+    glutDisplayFunc(display);
     glutMouseFunc(mouseClick);
     glutKeyboardFunc(keyboardFunc); // Função para lidar com pressionamento de tecla
 
-    glutMainLoop(); // Mostra tudo e espera
+    glutMainLoop();
     return 0;
 }
