@@ -1,0 +1,7 @@
+# depslib dependency file v1.0
+1711765893 source:c:\users\bruna - ufca\documents\codes\computer-graphics-github\rendering-cena-1\main.c
+	<windows.h>
+	<stdio.h>
+	<stdlib.h>
+	<GL/glut.h>
+
