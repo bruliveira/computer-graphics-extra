@@ -4,11 +4,15 @@
 #include <stdlib.h>
 #include <GL/glut.h>
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
 float alpha = 0, beta = 0, delta = 1; // Inicializa os ângulos de rotação e escala
 bool keyUpPressed = false;
 bool keyDownPressed = false;
 bool keyLeftPressed = false;
 bool keyRightPressed = false;
+bool savaImagem = false;
 
 void Ilumina()
 {
@@ -142,38 +146,10 @@ void cenario(float espessura, int op)
     }
 }
 
-void display(void)
-{
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glMatrixMode(GL_MODELVIEW);
-
-    // Chão
-    cenario(0.1, 1);
-
-    // Parede
-    glPushMatrix();
-    glRotatef(-90.0, 1.0, 0.0, 0.0);
-    cenario(0.1, 0);
-    glPopMatrix();
-
-    glPushMatrix();
-    glRotatef(-90.0, 1.0, 0.0, 0.0);
-    glRotatef(270.0, 0.0, 0.0, 1.0);
-    cenario(0.1, 0);
-    glPopMatrix();
-
-    bule();
-    toro();
-    bola();
-
-    glFlush();
-}
-
-int a = 2;
 void update(int value)
 {
     // Atualize a cena aqui...
-    if (keyRightPressed && a == 2)
+    if (keyRightPressed)
     {
         beta += 1.5; // Incrementa o ângulo de rotação em torno do eixo y
     }
@@ -204,6 +180,9 @@ void keyPressedSpecial(int key, int x, int y)
     // Ative a rotação automática na direção correspondente quando uma tecla de seta for pressionada
     switch (key)
     {
+    case GLUT_KEY_F1: // Exemplo: salvar a imagem quando a tecla F1 for pressionada
+        savaImagem = true;
+        break;
     case GLUT_KEY_RIGHT:
         keyRightPressed = true;
         break;
@@ -236,6 +215,69 @@ void keyReleasedSpecial(int key, int x, int y)
     case GLUT_KEY_DOWN:
         keyDownPressed = false;
         break;
+    }
+}
+
+void exportar(const char *filename, int width, int height)
+{
+    // Armazenar os pixels
+    unsigned char *pixels = (unsigned char *)malloc(3 * width * height);
+    if (pixels == NULL)
+    {
+        printf("Erro ao alocar memória para os pixels.\n");
+        return;
+    }
+
+    // Lendo os pixels do framebuffer
+    glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+
+    // Inverte a ordem dos pixels no eixo y (OpenGL armazena os pixels de baixo para cima)
+    unsigned char *flipped_pixels = (unsigned char *)malloc(3 * width * height);
+    for (int y = 0; y < height; ++y)
+    {
+        memcpy(flipped_pixels + (height - y - 1) * width * 3, pixels + y * width * 3, width * 3);
+    }
+
+    // Salva os pixels em um arquivo de imagem
+    stbi_write_png(filename, width, height, 3, flipped_pixels, width * 3);
+
+    // Libera a memória alocada
+    free(pixels);
+    free(flipped_pixels);
+
+    printf("Imagem salva como %s\n", filename);
+}
+
+void display(void)
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glMatrixMode(GL_MODELVIEW);
+
+    // Chão
+    cenario(0.1, 1);
+
+    // Parede
+    glPushMatrix();
+    glRotatef(-90.0, 1.0, 0.0, 0.0);
+    cenario(0.1, 0);
+    glPopMatrix();
+
+    glPushMatrix();
+    glRotatef(-90.0, 1.0, 0.0, 0.0);
+    glRotatef(270.0, 0.0, 0.0, 1.0);
+    cenario(0.1, 0);
+    glPopMatrix();
+
+    bule();
+    toro();
+    bola();
+
+    glFlush();
+
+    if (savaImagem)
+    {
+        exportar("cena1.png", 800, 800);
+        savaImagem = false;
     }
 }
 
