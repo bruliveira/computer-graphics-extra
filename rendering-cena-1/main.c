@@ -1,5 +1,5 @@
 #include <windows.h>
-#include <stdbool.h> // Incluindo a biblioteca para usar o tipo de dados bool
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <GL/glut.h>
@@ -7,12 +7,13 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
-float alpha = 0, beta = 0, delta = 1; // Inicializa os ângulos de rotação e escala
-bool keyUpPressed = false;
-bool keyDownPressed = false;
-bool keyLeftPressed = false;
-bool keyRightPressed = false;
-bool savaImagem = false;
+// Inicializando os ângulos de rotação e escala
+float alpha = 0, beta = 0, delta = 1;
+bool keyUpPressionada = false;
+bool keyDownPressionada = false;
+bool keyLeftPressionada = false;
+bool keyRightPressionada = false;
+bool salvaImagem = false;
 
 void Ilumina()
 {
@@ -20,7 +21,7 @@ void Ilumina()
     float black[4] = {0.0f, 0.0f, 0.0f, 1.0f};
     float white[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 
-    // Iluminações ambiente, especular e difusa
+    // Iluminação ambiente, especular e difusa
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition); // Luz
     glLightfv(GL_LIGHT0, GL_AMBIENT, black);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, white);
@@ -34,9 +35,9 @@ void Ilumina()
     glEnable(GL_LIGHT0);
 }
 
-void bule()
+void objetoBule()
 {
-    // Cores - bule
+    // Cores - objetoBule
     float kd[4] = {0.2f, 0.6f, 1.0f, 1.0f};
     float ks[4] = {0.9f, 0.9f, 0.9f, 1.0f};
     float ns = 70.0f;
@@ -55,9 +56,9 @@ void bule()
     glPopMatrix();
 }
 
-void toro()
+void objetoToro()
 {
-    // Cores - toro
+    // Cores - objetoToro
     float kd[4] = {0.2f, 1.0f, 0.2f, 1.0f};
     float ks[4] = {0.9f, 0.9f, 0.9f, 1.0f};
     float ns = 100.0f;
@@ -77,9 +78,9 @@ void toro()
     glPopMatrix();
 }
 
-void bola()
+void objetoBola()
 {
-    // Cores - bola
+    // Cores - objetoBola
     float ka[4] = {2.5f, 1.5f, 0.0f, 1.0f};
     float kd[4] = {1.0f, 0.5f, 0.0f, 1.0f};
     float ks[4] = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -102,7 +103,7 @@ void bola()
 void init(void)
 {
     glClearColor(0.5, 0.5, 0.5, 1.0); // Cor de fundo
-    glEnable(GL_DEPTH_TEST);          // Remoção de superfície oculta
+    glEnable(GL_DEPTH_TEST);          // Remoção de superf�cie oculta
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity(); // Carrega a matriz de identidade
@@ -118,7 +119,7 @@ void init(void)
     Ilumina(); // Iluminação
 }
 
-void cenario(float espessura, int op)
+void cenarioDesenho(float espessura, int op)
 {
     float kd[4] = {1.0f, 0.0f, 0.0f, 1.0f};
     float ks[4] = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -148,22 +149,21 @@ void cenario(float espessura, int op)
 
 void update(int value)
 {
-    // Atualize a cena aqui...
-    if (keyRightPressed)
+    if (keyRightPressionada)
     {
         beta += 1.5; // Incrementa o ângulo de rotação em torno do eixo y
     }
-    if (keyLeftPressed)
+    if (keyLeftPressionada)
     {
-        beta -= 1.5; // Decrementa o ângulo de rotação em torno do eixo y
+        beta -= 1.5; // Decrementa o ângulo de Rotação em torno do eixo y
     }
-    if (keyUpPressed)
+    if (keyUpPressionada)
     {
-        alpha += 1.5; // Incrementa o ângulo de rotação em torno do eixo x
+        alpha += 1.5; // Incrementa o ângulo de Rotação em torno do eixo x
     }
-    if (keyDownPressed)
+    if (keyDownPressionada)
     {
-        alpha -= 1.5; // Decrementa o ângulo de rotação em torno do eixo x
+        alpha -= 1.5; // Decrementa o ângulo de Rotação em torno do eixo x
     }
 
     // Pode deixar automatico, tira os ifs e utiliza apenas esses
@@ -171,49 +171,47 @@ void update(int value)
     // beta += 1.5;
 
     glutPostRedisplay();
-
     glutTimerFunc(25, update, 0);
 }
 
 void keyPressedSpecial(int key, int x, int y)
 {
-    // Ative a rotação automática na direção correspondente quando uma tecla de seta for pressionada
     switch (key)
     {
-    case GLUT_KEY_F1: // Exemplo: salvar a imagem quando a tecla F1 for pressionada
-        savaImagem = true;
+    case GLUT_KEY_F1: // Salva a imagem quando a tecla F1 for pressionada
+        salvaImagem = true;
         break;
     case GLUT_KEY_RIGHT:
-        keyRightPressed = true;
+        keyRightPressionada = true;
         break;
     case GLUT_KEY_LEFT:
-        keyLeftPressed = true;
+        keyLeftPressionada = true;
         break;
     case GLUT_KEY_UP:
-        keyUpPressed = true;
+        keyUpPressionada = true;
         break;
     case GLUT_KEY_DOWN:
-        keyDownPressed = true;
+        keyDownPressionada = true;
         break;
     }
+    glutPostRedisplay();
 }
 
 void keyReleasedSpecial(int key, int x, int y)
 {
-    // Desative a rotação automática na direção correspondente quando uma tecla de seta for liberada
     switch (key)
     {
     case GLUT_KEY_RIGHT:
-        keyRightPressed = false;
+        keyRightPressionada = false;
         break;
     case GLUT_KEY_LEFT:
-        keyLeftPressed = false;
+        keyLeftPressionada = false;
         break;
     case GLUT_KEY_UP:
-        keyUpPressed = false;
+        keyUpPressionada = false;
         break;
     case GLUT_KEY_DOWN:
-        keyDownPressed = false;
+        keyDownPressionada = false;
         break;
     }
 }
@@ -224,7 +222,7 @@ void exportar(const char *filename, int width, int height)
     unsigned char *pixels = (unsigned char *)malloc(3 * width * height);
     if (pixels == NULL)
     {
-        printf("Erro ao alocar memória para os pixels.\n");
+        printf("Erro ao alocar mem�ria para os pixels.\n");
         return;
     }
 
@@ -254,30 +252,30 @@ void display(void)
     glMatrixMode(GL_MODELVIEW);
 
     // Chão
-    cenario(0.1, 1);
+    cenarioDesenho(0.1, 1);
 
     // Parede
     glPushMatrix();
     glRotatef(-90.0, 1.0, 0.0, 0.0);
-    cenario(0.1, 0);
+    cenarioDesenho(0.1, 0);
     glPopMatrix();
 
     glPushMatrix();
     glRotatef(-90.0, 1.0, 0.0, 0.0);
     glRotatef(270.0, 0.0, 0.0, 1.0);
-    cenario(0.1, 0);
+    cenarioDesenho(0.1, 0);
     glPopMatrix();
 
-    bule();
-    toro();
-    bola();
+    objetoBule();
+    objetoToro();
+    objetoBola();
 
     glFlush();
 
-    if (savaImagem)
+    if (salvaImagem)
     {
         exportar("cena1.png", 800, 800);
-        savaImagem = false;
+        salvaImagem = false;
     }
 }
 
